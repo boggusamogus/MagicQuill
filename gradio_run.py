@@ -350,4 +350,4 @@ app = gr.mount_gradio_app(app, demo, "/")
 if __name__ == "__main__":
     # Set your desired username and password here
     auth = ("username", "password")
-    demo.launch(auth=auth)
+    demo.launch(auth=auth,share=True)
