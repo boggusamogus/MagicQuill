@@ -18,6 +18,7 @@ from MagicQuill.scribble_color_edit import ScribbleColorEditModel
 import time
 import io
 import webbrowser  # Import the webbrowser module
+import threading  # Import threading for running the browser opener in the background
 
 AUTO_SAVE = False
 RES = 512
@@ -340,18 +341,18 @@ async def process_background_img(request: Request):
 
 app = gr.mount_gradio_app(app, demo, "/")
 
-def open_browser(public_url):
+def open_browser():
     # Wait for the server to start
     time.sleep(5)
-    # Open the browser to the public share link
-    webbrowser.open(public_url)
+    # Open the browser to the Gradio server URL
+    webbrowser.open("http://127.0.0.1:7860")
 
 if __name__ == "__main__":
     # Set your desired username and password here
     auth = ("username", "password")
     
-    # Launch the Gradio server with authentication and sharing enabled
-    public_url = demo.launch(auth=auth, share=True)
+    # Start the browser opening in a separate thread
+    threading.Thread(target=open_browser).start()
     
-    # Open the browser to the public share link
-    open_browser(public_url)
+    # Launch the Gradio server with authentication and sharing enabled
+    demo.launch(auth=auth, share=True)
