@@ -17,9 +17,7 @@ from MagicQuill.llava_new import LLaVAModel
 from MagicQuill.scribble_color_edit import ScribbleColorEditModel
 import time
 import io
-
-# Check if running in Google Colab
-IN_COLAB = 'google.colab' in str(get_ipython())
+from pyngrok import ngrok
 
 AUTO_SAVE = False
 RES = 512
@@ -351,8 +349,6 @@ async def process_background_img(request: Request):
 app = gr.mount_gradio_app(app, demo, "/")
 
 if __name__ == "__main__":
-    if IN_COLAB:
-        from pyngrok import ngrok
-        public_url = ngrok.connect(7860)
-        print(f"Public URL: {public_url}")
+    public_url = ngrok.connect(7860)
+    print(f"Public URL: {public_url}")
     uvicorn.run(app, host="127.0.0.1", port=7860)
