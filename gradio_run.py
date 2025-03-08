@@ -17,8 +17,9 @@ from MagicQuill.llava_new import LLaVAModel
 from MagicQuill.scribble_color_edit import ScribbleColorEditModel
 import time
 import io
-import webbrowser  # Import the webbrowser module
-import threading  # Import threading for running the browser opener in the background
+
+# Check if running in Google Colab
+IN_COLAB = 'google.colab' in str(get_ipython())
 
 AUTO_SAVE = False
 RES = 512
@@ -32,6 +33,7 @@ def tensor_to_base64(tensor):
     buffered = io.BytesIO()
     pil_image.save(buffered, format="PNG")
     img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    
     return img_str
 
 def read_base64_image(base64_image):
@@ -237,6 +239,12 @@ with gr.Blocks(css=css) as demo:
                     value="",
                     interactive=True
                 )
+                # stroke_as_edge = gr.Radio(
+                #     label="Stroke as Edge",
+                #     choices=['enable', 'disable'],
+                #     value='enable',
+                #     interactive=True
+                # )
                 fine_edge = gr.Radio(
                     label="Fine Edge",
                     choices=['enable', 'disable'],
@@ -337,22 +345,14 @@ async def process_background_img(request: Request):
     print("max_size:", max_size)
     resized_img_tensor = load_and_resize_image(img, max_size=max_size)
     resized_img_base64 = "data:image/png;base64," + tensor_to_base64(resized_img_tensor)
+    # add more processing here
     return resized_img_base64
 
 app = gr.mount_gradio_app(app, demo, "/")
 
-def open_browser():
-    # Wait for the server to start
-    time.sleep(5)
-    # Open the browser to the Gradio server URL
-    webbrowser.open("http://127.0.0.1:7860")
-
 if __name__ == "__main__":
-    # Set your desired username and password here
-    auth = ("username", "password")
-    
-    # Start the browser opening in a separate thread
-    threading.Thread(target=open_browser).start()
-    
-    # Launch the Gradio server with authentication and sharing enabled
-    demo.launch(auth=auth, share=True)
+    if IN_COLAB:
+        from pyngrok import ngrok
+        public_url = ngrok.connect(7860)
+        print(f"Public URL: {public_url}")
+    uvicorn.run(app, host="127.0.0.1", port=7860)
